@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SiliconFlow 语音跟随测试 — ZenPrompter</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:#0f172a;color:#e2e8f0;min-height:100vh;
+    padding:16px 16px 80px;
+  }
+  h1{font-size:22px;font-weight:700;text-align:center;margin-bottom:4px}
+  .sub{color:#94a3b8;font-size:12px;text-align:center;margin-bottom:20px}
+
+  .card{
+    background:#1e293b;border:1px solid #334155;
+    border-radius:14px;padding:16px;margin-bottom:14px;
+  }
+  .card h3{font-size:14px;margin-bottom:10px;color:#f8fafc}
+  .card label{display:block;font-size:11px;color:#94a3b8;margin-bottom:4px}
+  .card input[type=text],.card input[type=password]{
+    width:100%;padding:10px 12px;border-radius:8px;border:1px solid #475569;
+    background:#0f172a;color:#e2e8f0;font-size:13px;margin-bottom:10px
+  }
+  .card input:focus{outline:none;border-color:#f59e0b}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;
+    cursor:pointer;border:none;transition:all .2s;
+  }
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn-go{background:#f59e0b;color:#0f172a;width:100%;justify-content:center}
+  .btn-go:hover:not(:disabled){background:#d97706}
+  .btn-stop{background:#dc2626;color:#fff;width:100%;justify-content:center}
+  .btn-stop:hover:not(:disabled){background:#b91c1c}
+
+  .status-bar{
+    display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px
+  }
+  .dot{width:10px;height:10px;border-radius:50%;background:#475569}
+  .dot.recording{background:#ef4444;animation:pulse 1s infinite}
+  .dot.processing{background:#f59e0b;animation:pulse .5s infinite}
+  .dot.done{background:#22c55e}
+  .dot.error{background:#ef4444}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .result-box{
+    margin-top:12px;padding:16px;border-radius:10px;
+    background:#0f172a;border:1px solid #334155;
+    min-height:60px;font-size:18px;line-height:1.6;word-break:break-word
+  }
+  .result-box:empty::after{content:'等待识别结果…';color:#475569}
+
+  .log-box{
+    margin-top:8px;max-height:200px;overflow-y:auto;
+    font-size:11px;font-family:monospace;color:#64748b
+  }
+  .log-box .ok{color:#4ade80}
+  .log-box .err{color:#f87171}
+  .log-box .warn{color:#fbbf24}
+
+  .hint{font-size:10px;color:#64748b;margin-top:6px}
+</style>
+</head>
+<body>
+
+<h1>🎤 SiliconFlow 语音跟随</h1>
+<p class="sub">FunAudioLLM/SenseVoiceSmall · 绕过 Chrome Web Speech API aborted 问题</p>
+
+<!-- API 配置 -->
+<div class="card">
+  <h3>API 配置</h3>
+  <label>SiliconFlow API Key</label>
+  <input type="password" id="api-key" placeholder="sk-xxxxxxxxxxxxx">
+  <label>模型</label>
+  <input type="text" id="model" value="FunAudioLLM/SenseVoiceSmall" readonly>
+  <p class="hint">Key 保存在本机 localStorage，仅通过 localhost 传输</p>
+</div>
+
+<!-- 录音控制 -->
+<div class="card">
+  <h3>语音跟随测试</h3>
+  <p style="font-size:12px;color:#94a3b8;margin-bottom:12px">
+    按住「开始录音」说话，松手后自动发送到 SiliconFlow 识别。
+  </p>
+
+  <button class="btn btn-go" id="btn-record" onmousedown="startRecording()" onmouseup="stopRecording()" onmouseleave="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()" ontouchcancel="stopRecording()">
+    🎤 按住开始录音
+  </button>
+
+  <div class="status-bar" id="status-bar">
+    <div class="dot" id="dot"></div>
+    <span id="status-text">就绪</span>
+  </div>
+
+  <!-- 识别结果 -->
+  <div class="result-box" id="result"></div>
+
+  <!-- 日志 -->
+  <div class="log-box" id="log"></div>
+</div>
+
+<script>
+// ====== 持久化 API Key ======
+const KEY_STORAGE = 'sf_asr_api_key';
+const apiKeyInput = document.getElementById('api-key');
+const savedKey = localStorage.getItem(KEY_STORAGE);
+if (savedKey) apiKeyInput.value = savedKey;
+apiKeyInput.addEventListener('change', () => {
+  const val = apiKeyInput.value.trim();
+  if (val) localStorage.setItem(KEY_STORAGE, val);
+  else localStorage.removeItem(KEY_STORAGE);
+});
+
+// ====== 日志 ======
+function log(msg, cls='') {
+  const el = document.getElementById('log');
+  const time = new Date().toLocaleTimeString();
+  el.innerHTML += `<div class="${cls}">[${time}] ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+// ====== 录音逻辑 ======
+let mediaRecorder = null;
+let audioChunks = [];
+let stream = null;
+
+function setStatus(state, text) {
+  const dot = document.getElementById('dot');
+  dot.className = 'dot ' + state;
+  document.getElementById('status-text').textContent = text;
+}
+
+async function startRecording() {
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey) {
+    log('请先填写 API Key', 'err');
+    return;
+  }
+
+  // 先停掉旧 stream
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  audioChunks = [];
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    log('麦克风已连接', 'ok');
+
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : MediaRecorder.isTypeSupported('audio/webm')
+      ? 'audio/webm'
+      : 'audio/mp4';
+
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+    log('录音器初始化: ' + mimeType);
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      if (audioChunks.length === 0) {
+        setStatus('error', '无音频数据');
+        log('无音频数据', 'err');
+        return;
+      }
+
+      setStatus('processing', '识别中…');
+      const blob = new Blob(audioChunks, { type: mimeType });
+      log(`音频大小: ${(blob.size/1024).toFixed(1)}KB，发送到 SiliconFlow…`);
+
+      try {
+        const formData = new FormData();
+        // SiliconFlow 需要 .wav 或通用 audio 扩展名
+        const ext = mimeType.includes('webm') ? 'webm' : 'mp4';
+        formData.append('file', blob, `recording.${ext}`);
+        formData.append('model', 'FunAudioLLM/SenseVoiceSmall');
+
+        const response = await fetch('https://api.siliconflow.cn/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${apiKey}` },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errText}`);
+        }
+
+        const data = await response.json();
+        const text = data.text || '';
+        document.getElementById('result').textContent = text;
+        setStatus('done', '识别完成');
+        log(`✅ 识别结果: ${text || '(空)'}`, 'ok');
+      } catch (err) {
+        setStatus('error', 'API 错误');
+        log(`✗ API 调用失败: ${err.message}`, 'err');
+      }
+
+      // 释放 stream
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
+    };
+
+    mediaRecorder.start();
+    setStatus('recording', '录音中…');
+    log('🔴 开始录音');
+    document.getElementById('btn-record').textContent = '🔴 松开停止录音';
+    document.getElementById('btn-record').className = 'btn btn-stop';
+  } catch (err) {
+    setStatus('error', '麦克风错误');
+    log(`✗ 麦克风访问失败: ${err.name} — ${err.message}`, 'err');
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    log('⏹ 停止录音');
+    document.getElementById('btn-record').textContent = '🎤 按住开始录音';
+    document.getElementById('btn-record').className = 'btn btn-go';
+    setStatus('processing', '处理中…');
+  }
+}
+
+// 初始化日志
+log('SiliconFlow 语音跟随测试就绪');
+log('API: FunAudioLLM/SenseVoiceSmall · 端点: api.siliconflow.cn/v1/audio/transcriptions');
+</script>
+</body>
+</html>

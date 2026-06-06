@@ -1,0 +1,10 @@
+{
+  "name": "ZenPrompter 智能提词器",
+  "description": "一款极致极简、功能强大的智能随读提词器。支持语音实时跟读、水平镜像、背景及文字透明度调节、以及 Gemini 驱动的 AI 脚本创作和润色。",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

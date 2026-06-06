@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "919873399084",
+    "project_id": "lunar-analyzer-482616-c5",
+    "storage_bucket": "lunar-analyzer-482616-c5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919873399084:android:e5d6171367ea6970716489",
+        "android_client_info": {
+          "package_name": "com.zen.teleprompter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919873399084-tk76au0tlo0m3dj5b2rk43i1p46scecq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBhPGo56Efkw6Tltu0baazfdjHGP_SF5E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919873399084-tk76au0tlo0m3dj5b2rk43i1p46scecq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

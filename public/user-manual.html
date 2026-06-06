@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZenPrompter 产品使用说明书</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        * { font-family: 'Inter', system-ui, sans-serif; }
+        body { background: #0a0a0f; color: #e5e7eb; }
+        .gradient-text { background: linear-gradient(135deg, #f59e0b, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card { background: #14141f; border: 1px solid #1e1e2e; border-radius: 12px; transition: border-color 0.2s; }
+        .card-hover:hover { border-color: #f59e0b40; }
+        .code-block { background: #0c0c18; border: 1px solid #1e1e32; border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', 'Cascadia Code', monospace; font-size: 0.875rem; overflow-x: auto; color: #a5f3fc; }
+        .code-inline { font-family: 'JetBrains Mono', monospace; background: rgba(245,158,11,0.1); color: #fbbf24; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.8125rem; }
+        .tag { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .tag-new { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .tag-pro { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+        .sidebar-nav a { transition: all 0.2s; display: block; padding: 0.375rem 0; color: #6b7280; font-size: 0.875rem; }
+        .sidebar-nav a:hover { color: #f59e0b; }
+        .sidebar-nav .section-label { color: #9ca3af; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 1rem; padding-bottom: 0.25rem; }
+        html { scroll-behavior: smooth; scroll-padding-top: 1.5rem; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0f; }
+        ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3a3a4a; }
+
+        /* Feature card styles */
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+
+        /* Keyboard shortcut badge */
+        kbd { font-family: 'JetBrains Mono', monospace; background: #1e1e2e; border: 1px solid #2a2a3e; border-radius: 4px; padding: 0.125rem 0.375rem; font-size: 0.75rem; color: #e5e7eb; box-shadow: 0 1px 0 #2a2a3e; }
+
+        /* Table styles */
+        .doc-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.875rem; }
+        .doc-table th { text-align: left; padding: 0.75rem 1rem; background: #0c0c18; color: #9ca3af; font-weight: 600; border-bottom: 1px solid #1e1e2e; }
+        .doc-table th:first-child { border-radius: 8px 0 0 0; }
+        .doc-table th:last-child { border-radius: 0 8px 0 0; }
+        .doc-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #1a1a2a; color: #d1d5db; }
+        .doc-table tr:last-child td { border-bottom: none; }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="hidden lg:flex flex-col w-72 bg-[#0c0c14] border-r border-[#1e1e2e] p-6 fixed h-full overflow-y-auto z-10">
+            <div class="mb-6">
+                <div class="text-2xl font-black tracking-tight">
+                    <span class="text-white">Zen</span><span class="text-amber-500">Prompter</span>
+                </div>
+                <p class="text-xs text-gray-600 mt-1">产品使用说明书</p>
+            </div>
+            <nav class="sidebar-nav space-y-0.5 flex-1">
+                <div class="section-label">开始使用</div>
+                <a href="#overview">产品概述</a>
+                <a href="#quickstart">快速入门</a>
+                <a href="#workflow">基本操作流程</a>
+
+                <div class="section-label">核心功能</div>
+                <a href="#display-scroll">提词显示与滚动</a>
+                <a href="#edit-mode">编辑模式</a>
+                <a href="#voice-tracking">AI 语音跟读</a>
+                <a href="#ai-assistant">AI 创作助手</a>
+                <a href="#script-library">脚本库管理</a>
+
+                <div class="section-label">自定义配置</div>
+                <a href="#appearance">外观与样式</a>
+                <a href="#api-settings">API 配置</a>
+                <a href="#voice-settings">语音跟读设置</a>
+
+                <div class="section-label">其他功能</div>
+                <a href="#drag-drop">文件拖放</a>
+                <a href="#mirror-mode">镜像模式</a>
+                <a href="#persistence">数据持久化</a>
+                <a href="#updates">更新检查</a>
+
+                <div class="section-label">附录</div>
+                <a href="#troubleshoot">常见问题</a>
+                <a href="#architecture">技术架构</a>
+            </nav>
+            <div class="pt-4 border-t border-[#1e1e2e] text-xs text-gray-600 mt-4">
+                v1.0.0 &middot; 2026-05-29
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 lg:ml-72 p-6 lg:p-10 xl:p-14 max-w-5xl">
+            <!-- Mobile Header -->
+            <div class="lg:hidden mb-6">
+                <div class="text-2xl font-black tracking-tight">
+                    <span class="text-white">Zen</span><span class="text-amber-500">Prompter</span>
+                </div>
+                <p class="text-xs text-gray-600 mt-1">产品使用说明书</p>
+                <hr class="border-[#1e1e2e] mt-4" />
+            </div>
+
+            <!-- Hero -->
+            <section id="overview" class="mb-14">
+                <div class="flex items-center gap-3 mb-1">
+                    <span class="tag tag-pro">v1.0.0</span>
+                    <span class="tag tag-new">跨平台</span>
+                </div>
+                <h1 class="text-4xl lg:text-5xl font-black tracking-tight mb-4">
+                    <span class="gradient-text">ZenPrompter</span><br />
+                    <span class="text-white">智能提词器 — 产品使用说明书</span>
+                </h1>
+
+                <div class="card p-6 mb-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div>
+                            <div class="text-2xl font-black text-amber-500">Web</div>
+                            <div class="text-xs text-gray-500">浏览器</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-amber-500">Android</div>
+                            <div class="text-xs text-gray-500">原生应用</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-amber-500">iOS</div>
+                            <div class="text-xs text-gray-500">原生应用</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-amber-500">Capacitor</div>
+                            <div class="text-xs text-gray-500">跨平台框架</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-lg text-gray-400 leading-relaxed max-w-3xl">
+                    ZenPrompter（提词器）是一款专为<strong class="text-white">个人演讲、直播带货、视频录制、公开演示</strong>等场景设计的智能提词器应用。它提供流畅的自动滚屏、AI 语音跟读、AI 脚本创作、丰富的外观定制等能力，支持 Web / Android / iOS 三大平台。
+                </p>
+
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <span class="text-xs bg-amber-950/30 text-amber-400 px-3 py-1 rounded-full border border-amber-500/20">React 19</span>
+                    <span class="text-xs bg-amber-950/30 text-amber-400 px-3 py-1 rounded-full border border-amber-500/20">TypeScript</span>
+                    <span class="text-xs bg-amber-950/30 text-amber-400 px-3 py-1 rounded-full border border-amber-500/20">Vite 6</span>
+                    <span class="text-xs bg-amber-950/30 text-amber-400 px-3 py-1 rounded-full border border-amber-500/20">Tailwind CSS 4</span>
+                </div>
+            </section>
+
+            <!-- Quick Start -->
+            <section id="quickstart" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                    <span class="text-amber-500">🚀</span> 快速入门
+                </h2>
+
+                <div class="space-y-4">
+                    <div class="card p-5 card-hover">
+                        <div class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold shrink-0">1</div>
+                            <div>
+                                <h3 class="font-semibold text-white">首次打开</h3>
+                                <p class="text-sm text-gray-400 mt-1">打开应用后会看到欢迎界面和简短使用说明，点击 <strong class="text-amber-400">"开始使用"</strong> 进入主界面。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-5 card-hover">
+                        <div class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold shrink-0">2</div>
+                            <div>
+                                <h3 class="font-semibold text-white">编辑脚本</h3>
+                                <p class="text-sm text-gray-400 mt-1"><strong class="text-white">双击</strong>文本显示区域进入编辑模式，输入或粘贴您的演讲内容。也支持从电脑拖拽 <code class="code-inline">.txt</code> / <code class="code-inline">.md</code> 文件导入。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-5 card-hover">
+                        <div class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold shrink-0">3</div>
+                            <div>
+                                <h3 class="font-semibold text-white">开始提词</h3>
+                                <p class="text-sm text-gray-400 mt-1">点击底部 <kbd>▶</kbd> 播放按钮或按键盘 <kbd>空格键</kbd> 开始自动滚动。使用速度 +/- 按钮调整滚动速度。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-5 card-hover">
+                        <div class="flex items-start gap-4">
+                            <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold shrink-0">4</div>
+                            <div>
+                                <h3 class="font-semibold text-white">进阶体验</h3>
+                                <p class="text-sm text-gray-400 mt-1">点击 <strong class="text-amber-400">麦克风图标</strong> 启用 AI 语音跟读 — 提词器会实时跟随您的语速自动滚动。点击 <strong class="text-amber-400">星星图标</strong> 使用 AI 生成脚本。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Workflow -->
+            <section id="workflow" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">基本操作流程</h2>
+                <div class="card p-6">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-3 text-sm">
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-black font-bold text-lg">✏️</div>
+                            <span class="text-gray-300">编辑脚本</span>
+                        </div>
+                        <div class="text-2xl text-amber-500 hidden md:block">→</div>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-black font-bold text-lg">⚡</div>
+                            <span class="text-gray-300">设置速度</span>
+                        </div>
+                        <div class="text-2xl text-amber-500 hidden md:block">→</div>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-black font-bold text-lg">▶️</div>
+                            <span class="text-gray-300">开始滚动</span>
+                        </div>
+                        <div class="text-2xl text-amber-500 hidden md:block">→</div>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-black font-bold text-lg">🎤</div>
+                            <span class="text-gray-300">朗读</span>
+                        </div>
+                        <div class="text-2xl text-amber-500 hidden md:block">→</div>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-black font-bold text-lg">⏹️</div>
+                            <span class="text-gray-300">自动停止</span>
+                        </div>
+                        <div class="text-2xl text-amber-500 hidden md:block">→</div>
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-black font-bold text-lg">↺</div>
+                            <span class="text-gray-300">重置顶部</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-5 mt-4">
+                    <h3 class="font-semibold text-white text-sm mb-3">常用快捷键</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div class="flex items-center justify-between bg-[#0c0c18] rounded-lg px-4 py-3">
+                            <span class="text-gray-400">播放 / 暂停</span>
+                            <div class="flex items-center gap-2">
+                                <kbd>空格键</kbd>
+                                <span class="text-gray-600">或</span>
+                                <kbd>▶</kbd>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between bg-[#0c0c18] rounded-lg px-4 py-3">
+                            <span class="text-gray-400">切换编辑模式</span>
+                            <kbd>双击文本区域</kbd>
+                        </div>
+                        <div class="flex items-center justify-between bg-[#0c0c18] rounded-lg px-4 py-3">
+                            <span class="text-gray-400">重置到顶部</span>
+                            <kbd>↺ 重置按钮</kbd>
+                        </div>
+                        <div class="flex items-center justify-between bg-[#0c0c18] rounded-lg px-4 py-3">
+                            <span class="text-gray-400">调整速度</span>
+                            <kbd>+ / - 按钮</kbd>
+                        </div>
+                        <div class="flex items-center justify-between bg-[#0c0c18] rounded-lg px-4 py-3">
+                            <span class="text-gray-400">语音跟读</span>
+                            <kbd>🎤 麦克风图标</kbd>
+                        </div>
+                        <div class="flex items-center justify-between bg-[#0c0c18] rounded-lg px-4 py-3">
+                            <span class="text-gray-400">系统设置</span>
+                            <kbd>⚙ 齿轮图标</kbd>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Display & Scroll -->
+            <section id="display-scroll" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">提词显示与滚动</h2>
+                <p class="text-gray-500 text-sm mb-6">提词区域是整个应用的核心界面，采取极简设计，让您专注于脚本内容。</p>
+
+                <div class="feature-grid">
+                    <div class="card p-5">
+                        <div class="text-2xl mb-2">🔄</div>
+                        <h3 class="font-semibold text-white mb-2">自动平滑滚动</h3>
+                        <p class="text-sm text-gray-400">基于 <code class="code-inline">requestAnimationFrame</code> 驱动的帧率无关滚动引擎，在任何刷新率显示器上均保持匀速平滑。</p>
+                    </div>
+                    <div class="card p-5">
+                        <div class="text-2xl mb-2">🎛️</div>
+                        <h3 class="font-semibold text-white mb-2">速度调节（0~10）</h3>
+                        <p class="text-sm text-gray-400">通过控制面板的 <strong class="text-white">+/-</strong> 按钮或速度滑块精确调节，步进 0.5。<br /><span class="text-gray-500 text-xs">速度 2 = 40px/s，速度 5 = 100px/s</span></p>
+                    </div>
+                    <div class="card p-5">
+                        <div class="text-2xl mb-2">⏸️</div>
+                        <h3 class="font-semibold text-white mb-2">播放/暂停</h3>
+                        <p class="text-sm text-gray-400">点击播放按钮或按 <kbd>空格键</kbd> 切换。滚动到底时自动暂停。</p>
+                    </div>
+                    <div class="card p-5">
+                        <div class="text-2xl mb-2">⏹️</div>
+                        <h3 class="font-semibold text-white mb-2">自动停止</h3>
+                        <p class="text-sm text-gray-400">当文本滚动至底部时自动暂停播放，无需手动操作。</p>
+                    </div>
+                    <div class="card p-5">
+                        <div class="text-2xl mb-2">↺</div>
+                        <h3 class="font-semibold text-white mb-2">重置到顶部</h3>
+                        <p class="text-sm text-gray-400">点击左侧重置按钮，立即回到文本开头，方便重新排练。</p>
+                    </div>
+                    <div class="card p-5">
+                        <div class="text-2xl mb-2">📖</div>
+                        <h3 class="font-semibold text-white mb-2">阅读/编辑双模式</h3>
+                        <p class="text-sm text-gray-400">播放时自动进入只读阅读模式（不可误触编辑），双击切换回编辑模式。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Edit Mode -->
+            <section id="edit-mode" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">编辑模式</h2>
+                <div class="card p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div>
+                                <strong class="text-white">直接编辑</strong>
+                                <p class="text-sm text-gray-400">双击文本区域进入编辑模式，直接在 <code class="code-inline">contenteditable</code> 区域修改文本内容。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div>
+                                <strong class="text-white">粘贴内容</strong>
+                                <p class="text-sm text-gray-400">支持从剪贴板直接粘贴纯文本内容，自动过滤富文本格式。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div>
+                                <strong class="text-white">拖放导入</strong>
+                                <p class="text-sm text-gray-400">支持拖拽 <code class="code-inline">.txt</code> 或 <code class="code-inline">.md</code> 文件直接导入文本内容。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div>
+                                <strong class="text-white">实时保存</strong>
+                                <p class="text-sm text-gray-400">每次修改自动保存至浏览器 localStorage 和 IndexedDB，关闭页面不会丢失数据。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Voice Tracking -->
+            <section id="voice-tracking" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                    <span class="text-amber-500">🎤</span> AI 智能语音跟读
+                    <span class="tag tag-new">核心功能</span>
+                </h2>
+                <p class="text-gray-500 text-sm mb-6">利用浏览器原生 Web Speech API 实现实时语音识别与文本追踪。您说到哪，提词器就跟到哪。</p>
+
+                <div class="card p-6 mb-4">
+                    <h3 class="font-semibold text-white mb-3">工作原理</h3>
+                    <div class="flex flex-col md:flex-row items-center gap-3 text-sm text-gray-400">
+                        <div class="bg-amber-950/30 px-4 py-2 rounded-lg border border-amber-500/20 text-center">
+                            <div class="text-xl">🎤</div>
+                            <div>用户朗读</div>
+                        </div>
+                        <div class="text-2xl text-amber-500">→</div>
+                        <div class="bg-amber-950/30 px-4 py-2 rounded-lg border border-amber-500/20 text-center">
+                            <div class="text-xl">🎙️</div>
+                            <div>麦克风采集</div>
+                        </div>
+                        <div class="text-2xl text-amber-500">→</div>
+                        <div class="bg-amber-950/30 px-4 py-2 rounded-lg border border-amber-500/20 text-center">
+                            <div class="text-xl">🧠</div>
+                            <div>语音识别</div>
+                        </div>
+                        <div class="text-2xl text-amber-500">→</div>
+                        <div class="bg-amber-950/30 px-4 py-2 rounded-lg border border-amber-500/20 text-center">
+                            <div class="text-xl">🔍</div>
+                            <div>模糊匹配</div>
+                        </div>
+                        <div class="text-2xl text-amber-500">→</div>
+                        <div class="bg-amber-950/30 px-4 py-2 rounded-lg border border-amber-500/20 text-center">
+                            <div class="text-xl">✨</div>
+                            <div>高亮+滚动</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-white mb-2">启动方式</h3>
+                        <ol class="text-sm text-gray-400 space-y-1.5 ml-4 list-decimal">
+                            <li>点击底部控制栏的 <strong class="text-amber-400">麦克风图标</strong>（位于播放按钮左侧）</li>
+                            <li>首次使用时浏览器会弹出麦克风权限请求，请选择 <strong class="text-white">"允许"</strong></li>
+                            <li>启动后会显示 <strong class="text-amber-400">"聆听中..."</strong> 状态提示</li>
+                            <li>开始朗读，提词器自动跟随您的语速滚动并高亮</li>
+                        </ol>
+                    </div>
+
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-white mb-3">视觉反馈</h3>
+                        <table class="doc-table">
+                            <thead>
+                                <tr><th>元素</th><th>表现</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="font-medium text-white">已读文本</td><td>文字变灰色（60% 不透明度），清晰标识朗读进度</td></tr>
+                                <tr><td class="font-medium text-white">当前朗读位置</td><td>使用指定高亮颜色（默认黄色）标记当前字词</td></tr>
+                                <tr><td class="font-medium text-white">状态指示</td><td>显示"聆听中..."/"追踪中..."/"网络错误"等实时状态</td></tr>
+                                <tr><td class="font-medium text-white">屏幕中线</td><td>半透明水平参考线，帮助保持视线位置一致</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-white mb-2">匹配算法特性</h3>
+                        <ul class="text-sm text-gray-400 space-y-1.5 ml-4 list-disc">
+                            <li>使用 <strong class="text-white">Levenshtein 编辑距离</strong> 进行模糊匹配，容忍最多 35% 差异</li>
+                            <li>优先在当前可见范围内匹配，失败时回退到全文搜索（双层策略）</li>
+                            <li>采用 40 字符滑动窗口，实时更新朗读位置</li>
+                            <li>内置防卡死机制：连续 3 次匹配失败自动尝试重新锁定</li>
+                            <li>网络错误后 1 秒自动重启语音识别</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-amber-950/20 border border-amber-500/20 rounded-xl p-4">
+                        <p class="text-sm text-amber-300 flex items-start gap-2">
+                            <span class="text-lg leading-none">💡</span>
+                            <span>推荐使用 <strong class="text-white">Chrome 浏览器</strong> 体验语音跟读功能。需要网络连接。默认识别中文（zh-CN）。</span>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Assistant -->
+            <section id="ai-assistant" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                    <span class="text-amber-500">✨</span> AI 创作助手
+                </h2>
+                <p class="text-gray-500 text-sm mb-6">基于大语言模型，一键生成口播脚本或润色现有文案。</p>
+
+                <div class="card p-5 mb-4">
+                    <h3 class="font-semibold text-white mb-2">功能入口</h3>
+                    <p class="text-sm text-gray-400">点击控制面板右侧的 <strong class="text-amber-400">✨ AI 创作</strong> 按钮（星星图标）打开 AI 创作面板。</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-white mb-2">生成全新脚本</h3>
+                        <ol class="text-sm text-gray-400 space-y-1.5 ml-4 list-decimal">
+                            <li>描述您的主题或观点</li>
+                            <li>选择语气风格：专业学术 / 日常随性 / 趣味幽默 / 激情促销</li>
+                            <li>点击 <strong class="text-amber-400">"生成全新脚本"</strong></li>
+                            <li>AI 自动生成 250~350 字的口播脚本</li>
+                        </ol>
+                    </div>
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-white mb-2">润色现有文本</h3>
+                        <ol class="text-sm text-gray-400 space-y-1.5 ml-4 list-decimal">
+                            <li>确保提词器中已有文本内容</li>
+                            <li>点击 <strong class="text-amber-400">"润色当前提词器文字"</strong></li>
+                            <li>AI 自动：长句拆短（≤20字）、书面→口语、修复语病</li>
+                            <li>保留原段落结构和核心意思</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="card p-5">
+                    <h3 class="font-semibold text-white mb-3">支持的 LLM 引擎</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div class="bg-[#0c0c18] rounded-lg px-3 py-2 text-sm">
+                            <div class="text-white font-medium">Google Gemini</div>
+                            <div class="text-xs text-gray-500">默认 / 自定义 Key</div>
+                        </div>
+                        <div class="bg-[#0c0c18] rounded-lg px-3 py-2 text-sm">
+                            <div class="text-white font-medium">硅基流动</div>
+                            <div class="text-xs text-gray-500">SiliconFlow</div>
+                        </div>
+                        <div class="bg-[#0c0c18] rounded-lg px-3 py-2 text-sm">
+                            <div class="text-white font-medium">DeepSeek</div>
+                            <div class="text-xs text-gray-500">深度求索</div>
+                        </div>
+                        <div class="bg-[#0c0c18] rounded-lg px-3 py-2 text-sm">
+                            <div class="text-white font-medium">OpenAI</div>
+                            <div class="text-xs text-gray-500">GPT-4o</div>
+                        </div>
+                        <div class="bg-[#0c0c18] rounded-lg px-3 py-2 text-sm">
+                            <div class="text-white font-medium">Kimi</div>
+                            <div class="text-xs text-gray-500">月之暗面</div>
+                        </div>
+                        <div class="bg-[#0c0c18] rounded-lg px-3 py-2 text-sm">
+                            <div class="text-white font-medium">GLM-4</div>
+                            <div class="text-xs text-gray-500">智谱</div>
+                        </div>
+                        <div class="bg-[#0c0c18] rounded-lg px-3 py-2 text-sm">
+                            <div class="text-white font-medium">通义千问</div>
+                            <div class="text-xs text-gray-500">阿里</div>
+                        </div>
+                        <div class="bg-[#0c0c18] rounded-lg px-3 py-2 text-sm">
+                            <div class="text-white font-medium">自定义</div>
+                            <div class="text-xs text-gray-500">OpenAI 兼容</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Script Library -->
+            <section id="script-library" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">脚本库管理</h2>
+                <p class="text-gray-500 text-sm mb-4">AI 创作助手面板左侧包含一个脚本库（题词库），用于保存和管理多个脚本。</p>
+                <div class="feature-grid">
+                    <div class="card p-5">
+                        <div class="text-xl mb-2">💾</div>
+                        <h3 class="font-semibold text-white mb-1">保存当前脚本</h3>
+                        <p class="text-sm text-gray-400">点击 <strong class="text-amber-400">"保存当前"</strong> 按钮将当前提词文本存入库中。</p>
+                    </div>
+                    <div class="card p-5">
+                        <div class="text-xl mb-2">📂</div>
+                        <h3 class="font-semibold text-white mb-1">加载脚本</h3>
+                        <p class="text-sm text-gray-400">点击列表中的脚本标题即可加载到提词器中。</p>
+                    </div>
+                    <div class="card p-5">
+                        <div class="text-xl mb-2">✏️</div>
+                        <h3 class="font-semibold text-white mb-1">修改标题</h3>
+                        <p class="text-sm text-gray-400">悬停脚本条目，点击编辑图标修改标题。</p>
+                    </div>
+                    <div class="card p-5">
+                        <div class="text-xl mb-2">🗑️</div>
+                        <h3 class="font-semibold text-white mb-1">删除脚本</h3>
+                        <p class="text-sm text-gray-400">悬停脚本条目，点击删除图标移除。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Appearance -->
+            <section id="appearance" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">外观与样式自定义</h2>
+                <p class="text-gray-500 text-sm mb-4">点击控制面板右侧的 <strong class="text-amber-400">⚙ 齿轮按钮</strong> 打开系统设置面板。</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-white mb-3">字体设置</h3>
+                        <table class="doc-table">
+                            <thead>
+                                <tr><th>设置</th><th>范围</th><th>说明</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>字号大小</td><td>20~150px</td><td>步进 5px，适合不同距离</td></tr>
+                                <tr><td>字体系列</td><td>无衬线/有衬线/等宽</td><td>不同风格场合</td></tr>
+                                <tr><td>文字颜色</td><td>7 种预设色</td><td>白/黄/绿/青/紫/粉/橙</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-white mb-3">背景设置</h3>
+                        <table class="doc-table">
+                            <thead>
+                                <tr><th>设置</th><th>范围</th><th>说明</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>背景颜色</td><td>任意 HSL 色</td><td>2D 颜色选择器自由选色</td></tr>
+                                <tr><td>背景透明度</td><td>0~100%</td><td>支持透明/绿幕场景</td></tr>
+                                <tr><td>文字透明度</td><td>10~100%</td><td>可用于弱化已读文本</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card p-5">
+                    <h3 class="font-semibold text-white mb-2">2D 颜色选择器</h3>
+                    <p class="text-sm text-gray-400">设置面板内置交互式 HSL 颜色选择器：</p>
+                    <ul class="text-sm text-gray-400 space-y-1 mt-2 ml-4 list-disc">
+                        <li><strong class="text-white">色相条（Hue）</strong> — 0°~360° 线性渐变，点击/拖动选择色调</li>
+                        <li><strong class="text-white">饱和度/明度面板</strong> — 横轴饱和度，纵轴明度，自由选取</li>
+                        <li>支持鼠标拖拽和触摸滑动两种交互方式</li>
+                        <li>颜色变化实时应用到背景，所见即所得</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- API Settings -->
+            <section id="api-settings" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">API 接口配置</h2>
+                <p class="text-gray-500 text-sm mb-4">通过控制面板齿轮菜单 → <strong class="text-amber-400">"API 接口设置"</strong> 打开配置界面。</p>
+
+                <div class="card p-5 mb-4">
+                    <h3 class="font-semibold text-white mb-3">LLM（大语言模型）配置</h3>
+                    <table class="doc-table">
+                        <thead>
+                            <tr><th>引擎</th><th>默认模型</th><th>特点</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="font-medium text-white">Google Gemini</td><td class="font-mono text-xs">gemini-2.5-flash</td><td>Google AI Studio API Key</td></tr>
+                            <tr><td class="font-medium text-white">硅基流动</td><td class="font-mono text-xs">DeepSeek-V3</td><td>国内高性价比算力平台</td></tr>
+                            <tr><td class="font-medium text-white">DeepSeek</td><td class="font-mono text-xs">deepseek-chat</td><td>超低成本、极致性价比</td></tr>
+                            <tr><td class="font-medium text-white">OpenAI GPT-4o</td><td class="font-mono text-xs">gpt-4o</td><td>全球顶尖旗舰模型</td></tr>
+                            <tr><td class="font-medium text-white">月之暗面 Kimi</td><td class="font-mono text-xs">moonshot-v1-8k</td><td>长文本专家</td></tr>
+                            <tr><td class="font-medium text-white">智谱 GLM-4</td><td class="font-mono text-xs">glm-4</td><td>清华背景，中文理解力强</td></tr>
+                            <tr><td class="font-medium text-white">阿里通义千问</td><td class="font-mono text-xs">qwen-turbo</td><td>适合带货/短视频场景</td></tr>
+                            <tr><td class="font-medium text-white">自定义 OpenAI 兼容</td><td class="font-mono text-xs">自定义</td><td>兼容任意 OpenAI 格式服务</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card p-5 mb-4">
+                    <h3 class="font-semibold text-white mb-3">ASR（语音识别）配置</h3>
+                    <table class="doc-table">
+                        <thead>
+                            <tr><th>引擎</th><th>类型</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="font-medium text-white">系统原生 Web Speech API</td><td><span class="text-green-400 text-xs">原生免费</span></td><td>浏览器自带，无需密钥</td></tr>
+                            <tr><td class="font-medium text-white">科大讯飞 iFlytek</td><td><span class="text-amber-400 text-xs">第三方</span></td><td>行业标杆，识别率 98%+</td></tr>
+                            <tr><td class="font-medium text-white">腾讯云语音识别</td><td><span class="text-amber-400 text-xs">第三方</span></td><td>需腾讯云 API 密钥</td></tr>
+                            <tr><td class="font-medium text-white">阿里云语音识别</td><td><span class="text-amber-400 text-xs">第三方</span></td><td>需阿里云 API 密钥</td></tr>
+                            <tr><td class="font-medium text-white">OpenAI Whisper</td><td><span class="text-amber-400 text-xs">第三方</span></td><td>通过 API 调用 Whisper 模型</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card p-5">
+                    <h3 class="font-semibold text-white mb-2">操作步骤</h3>
+                    <ol class="text-sm text-gray-400 space-y-1.5 ml-4 list-decimal">
+                        <li>从预设中选择一个引擎</li>
+                        <li>填写 API Key（及 AppID、Secret 等必要参数）</li>
+                        <li>点击 <strong class="text-amber-400">"测试连接"</strong> 验证配置是否有效</li>
+                        <li>点击 <strong class="text-amber-400">"保存配置"</strong> 激活引擎</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Voice Settings -->
+            <section id="voice-settings" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">语音跟读详细设置</h2>
+                <p class="text-gray-500 text-sm mb-4">通过控制面板齿轮菜单 → <strong class="text-amber-400">"语音跟读设置"</strong> 进入专门配置页面。</p>
+
+                <div class="card p-5">
+                    <table class="doc-table">
+                        <thead>
+                            <tr><th>配置项</th><th>选项/范围</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-medium text-white">高亮模式</td>
+                                <td>逐个字符 / 按句子</td>
+                                <td>字符级更精确，句子级更自然</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-white">高亮颜色</td>
+                                <td>7 种预设色</td>
+                                <td>覆盖朗读位置的标记颜色</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-white">高亮速度</td>
+                                <td>10~200ms</td>
+                                <td>高亮过渡动画时长</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-white">自动滚动</td>
+                                <td>开 / 关</td>
+                                <td>文本是否随朗读位置自动移动</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-white">语音同步</td>
+                                <td>开 / 关</td>
+                                <td>高亮与识别结果是否实时同步</td>
+                            </tr>
+                            <tr>
+                                <td class="font-medium text-white">字体大小</td>
+                                <td>16~48px</td>
+                                <td>语音模式下独立字体大小</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-sm text-gray-500 mt-3">点击 <strong class="text-amber-400">"重置默认值"</strong> 按钮可将所有语音跟读设置恢复为出厂状态。</p>
+            </section>
+
+            <!-- Drag & Drop -->
+            <section id="drag-drop" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">文件拖放支持</h2>
+                <div class="card p-5">
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div><strong class="text-white">支持格式</strong> <span class="text-gray-400 text-sm">— <code class="code-inline">.txt</code>（纯文本）和 <code class="code-inline">.md</code>（Markdown）</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div><strong class="text-white">拖放区域</strong> <span class="text-gray-400 text-sm">— 应用窗口的任意位置</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div><strong class="text-white">视觉反馈</strong> <span class="text-gray-400 text-sm">— 拖放悬停时显示半透明覆盖层和提示文字</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div><strong class="text-white">结果</strong> <span class="text-gray-400 text-sm">— 文件内容自动替换当前提词文本，重置滚动位置到顶部</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mirror Mode -->
+            <section id="mirror-mode" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">镜像模式</h2>
+                <div class="card p-5">
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div><strong class="text-white">用途</strong> <span class="text-gray-400 text-sm">— 配合实体提词器硬件使用（如摄像机下方的提词玻璃）</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div><strong class="text-white">原理</strong> <span class="text-gray-400 text-sm">— 对文本显示区域应用 CSS <code class="code-inline">scaleX(-1)</code> 水平翻转</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div><strong class="text-white">操作</strong> <span class="text-gray-400 text-sm">— 在系统设置面板中点击 <strong class="text-amber-400">"镜像翻转"</strong> 按钮开关</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div><strong class="text-white">视觉标识</strong> <span class="text-gray-400 text-sm">— 启用时按钮高亮显示为琥珀色</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Persistence -->
+            <section id="persistence" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">数据持久化</h2>
+                <p class="text-gray-500 text-sm mb-4">ZenPrompter 采用双层存储机制确保数据安全。</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-white mb-3">localStorage（快速读写）</h3>
+                        <table class="doc-table">
+                            <thead>
+                                <tr><th>Key</th><th>存储内容</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="font-mono text-xs">zen_text</td><td>当前提词文本内容</td></tr>
+                                <tr><td class="font-mono text-xs">zen_settings</td><td>所有应用设置</td></tr>
+                                <tr><td class="font-mono text-xs">tcq_script_library</td><td>脚本库列表</td></tr>
+                                <tr><td class="font-mono text-xs">zen_api_configs</td><td>API 引擎配置</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-white mb-3">IndexedDB（结构化存储）</h3>
+                        <ul class="text-sm text-gray-400 space-y-1.5 ml-4 list-disc">
+                            <li>数据库名：<code class="code-inline">PrompterDB</code></li>
+                            <li>对象存储：<code class="code-inline">prompts</code></li>
+                            <li>存储结构：文本 + 设置快照 + 时间戳</li>
+                            <li>自动保存：每次文本/设置变更、模式切换均保存</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Updates -->
+            <section id="updates" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">更新检查</h2>
+                <div class="card p-5">
+                    <p class="text-sm text-gray-400 mb-3">应用内置更新检查功能，通过 GitHub Releases 检测新版本。</p>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div class="text-sm text-gray-400">点击控制面板右侧的 <strong class="text-white">⟳ 更新</strong> 按钮手动检查更新</div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div class="text-sm text-gray-400">检查过程中按钮显示旋转动画</div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div class="text-sm text-gray-400">发现新版本时按钮变绿，点击可跳转下载页面</div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="text-amber-500 font-bold shrink-0">●</span>
+                            <div class="text-sm text-gray-400">GitHub 仓库：<code class="code-inline">linefish1/zn</code>，检测 tag 前缀 <code class="code-inline">android-</code> 和 <code class="code-inline">ios-</code></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section id="troubleshoot" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">常见问题</h2>
+
+                <div class="space-y-3">
+                    <details class="card p-5 group open:border-amber-500/30">
+                        <summary class="font-semibold text-white cursor-pointer list-none flex items-center justify-between">
+                            <span>Q1: 语音跟读无法启动怎么办？</span>
+                            <span class="text-amber-500 group-open:rotate-180 transition-transform text-lg">▼</span>
+                        </summary>
+                        <ul class="text-sm text-gray-400 mt-3 space-y-1.5 ml-4 list-disc">
+                            <li>确认使用的是 Chrome 浏览器</li>
+                            <li>检查是否已授予麦克风权限（地址栏左侧可查看）</li>
+                            <li>确认网络连接正常（左上角有网络状态指示器）</li>
+                            <li>尝试刷新页面后重新启用语音模式</li>
+                        </ul>
+                    </details>
+
+                    <details class="card p-5 group open:border-amber-500/30">
+                        <summary class="font-semibold text-white cursor-pointer list-none flex items-center justify-between">
+                            <span>Q2: AI 生成脚本失败？</span>
+                            <span class="text-amber-500 group-open:rotate-180 transition-transform text-lg">▼</span>
+                        </summary>
+                        <ul class="text-sm text-gray-400 mt-3 space-y-1.5 ml-4 list-disc">
+                            <li>检查 API 密钥是否正确配置（打开 API 设置验证）</li>
+                            <li>使用 <strong class="text-amber-400">"测试连接"</strong> 按钮验证引擎可用性</li>
+                            <li>确认网络连接正常</li>
+                            <li>默认 Gemini 需确保环境变量 <code class="code-inline">VITE_API_KEY</code> 已设置</li>
+                        </ul>
+                    </details>
+
+                    <details class="card p-5 group open:border-amber-500/30">
+                        <summary class="font-semibold text-white cursor-pointer list-none flex items-center justify-between">
+                            <span>Q3: 如何重置所有设置？</span>
+                            <span class="text-amber-500 group-open:rotate-180 transition-transform text-lg">▼</span>
+                        </summary>
+                        <div class="text-sm text-gray-400 mt-3 space-y-2">
+                            <p>清除浏览器 localStorage：</p>
+                            <div class="code-block">打开浏览器开发者工具 → Application → Local Storage<br />→ 删除 zen_settings、zen_text 等 key</div>
+                        </div>
+                    </details>
+
+                    <details class="card p-5 group open:border-amber-500/30">
+                        <summary class="font-semibold text-white cursor-pointer list-none flex items-center justify-between">
+                            <span>Q4: 如何在绿幕/直播场景使用？</span>
+                            <span class="text-amber-500 group-open:rotate-180 transition-transform text-lg">▼</span>
+                        </summary>
+                        <ol class="text-sm text-gray-400 mt-3 space-y-1.5 ml-4 list-decimal">
+                            <li>将背景透明度设为 0%，背景色设为绿色（HSL: 120°, 100%, 50%）</li>
+                            <li>调整文字颜色和字号的对比度</li>
+                            <li>使用 OBS 等软件的色度键（Chroma Key）过滤绿色背景</li>
+                        </ol>
+                    </details>
+
+                    <details class="card p-5 group open:border-amber-500/30">
+                        <summary class="font-semibold text-white cursor-pointer list-none flex items-center justify-between">
+                            <span>Q5: 应用支持哪些语言？</span>
+                            <span class="text-amber-500 group-open:rotate-180 transition-transform text-lg">▼</span>
+                        </summary>
+                        <ul class="text-sm text-gray-400 mt-3 space-y-1.5 ml-4 list-disc">
+                            <li>界面语言：中文（简体）</li>
+                            <li>语音识别：中文（普通话），可通过修改 <code class="code-inline">recognition.lang</code> 适配其他语言</li>
+                            <li>AI 生成脚本：中文</li>
+                        </ul>
+                    </details>
+                </div>
+            </section>
+
+            <!-- Architecture -->
+            <section id="architecture" class="mb-14">
+                <h2 class="text-2xl font-bold text-white mb-6">技术架构</h2>
+                <div class="card p-6">
+                    <div class="code-block text-xs leading-relaxed">
+index.html<br />
+&nbsp;&nbsp;└─ index.tsx (React 入口)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ App.tsx (状态中心)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ TeleprompterDisplay (提词显示 + 滚动 + 高亮)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ ControlPanel (控制栏 + 系统设置面板)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ AIModal (AI 创作助手 + 脚本库)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ HelpModal (使用指南)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ APISettingsModal (API 引擎配置)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ VoiceTrackingSettingsModal (语音跟读详细设置)<br />
+<br />
+services/<br />
+&nbsp;&nbsp;├─ databaseService.ts &nbsp;&nbsp;(IndexedDB 持久化)<br />
+&nbsp;&nbsp;├─ geminiService.ts &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(LLM 多引擎调用)<br />
+&nbsp;&nbsp;└─ updateService.ts &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(GitHub 更新检查)<br />
+<br />
+hooks/<br />
+&nbsp;&nbsp;└─ useVoiceTracking.ts &nbsp;(语音识别 + 模糊匹配 + 位置追踪)
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl font-black text-amber-500">React</div>
+                        <div class="text-xs text-gray-500">UI 框架 19.2</div>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl font-black text-amber-500">Vite</div>
+                        <div class="text-xs text-gray-500">构建工具 6.2</div>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl font-black text-amber-500">Tailwind</div>
+                        <div class="text-xs text-gray-500">CSS 框架 4.3</div>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl font-black text-amber-500">Capacitor</div>
+                        <div class="text-xs text-gray-500">跨平台 8.3</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="border-t border-[#1e1e2e] pt-6 pb-12 text-sm text-gray-600">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="text-white font-black">Zen</span><span class="text-amber-500 font-black">Prompter</span>
+                        <span class="mx-2">·</span> 产品使用说明书 v1.0.0
+                        <span class="mx-2">·</span> 2026-05-29
+                    </div>
+                    <div class="flex gap-4">
+                        <a href="https://github.com/linefish1/zn" class="hover:text-amber-400 transition-colors" target="_blank">GitHub</a>
+                        <a href="install-guide.html" class="hover:text-amber-400 transition-colors">安装指南</a>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>麦克风权限诊断 — ZenPrompter</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0f172a; color: #e2e8f0; min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px 60px;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; text-align: center; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 24px; text-align: center; }
+
+  .card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 14px; padding: 18px; width: 100%; max-width: 520px; margin-bottom: 16px;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.2s;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: #f59e0b; color: #0f172a; }
+  .btn-primary:hover:not(:disabled) { background: #d97706; }
+  .btn-secondary { background: #334155; color: #e2e8f0; border: 1px solid #475569; }
+  .btn-secondary:hover:not(:disabled) { background: #475569; }
+  .btn-danger { background: #dc2626; color: white; }
+  .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+  .btn-success { background: #16a34a; color: white; }
+  .btn-success:hover:not(:disabled) { background: #15803d; }
+
+  .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 600; border: 1px solid;
+  }
+  .badge-ok { color: #4ade80; background: #4ade8010; border-color: #4ade8020; }
+  .badge-err { color: #f87171; background: #f8717110; border-color: #f8717120; }
+  .badge-warn { color: #fbbf24; background: #fbbf2410; border-color: #fbbf2420; }
+  .badge-pending { color: #94a3b8; background: #94a3b810; border-color: #94a3b820; }
+
+  .log-line {
+    font-size: 12px; padding: 5px 0; border-bottom: 1px solid #1e293b80;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .log-time { color: #64748b; font-size: 10px; font-family: monospace; white-space: nowrap; min-width: 70px; }
+  .log-msg { word-break: break-all; }
+  .log-ok .log-msg { color: #4ade80; }
+  .log-err .log-msg { color: #f87171; }
+  .log-warn .log-msg { color: #fbbf24; }
+  .log-info .log-msg { color: #94a3b8; }
+
+  .log-container { max-height: 300px; overflow-y: auto; margin-top: 8px; }
+
+  .rom-card {
+    background: #fbbf2408; border: 1px solid #fbbf2430;
+    border-radius: 10px; padding: 12px; margin-top: 10px;
+  }
+  .rom-card h4 { color: #fbbf24; font-size: 13px; margin-bottom: 6px; }
+
+  .step-list { font-size: 12px; color: #cbd5e1; padding-left: 18px; }
+  .step-list li { margin-bottom: 4px; }
+
+  .test-section { margin-top: 12px; }
+  .test-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid #475569; border-top: 2px solid #f59e0b;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .triangle { width: 14px; height: 14px; border: 2px solid #4ade80; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+  .triangle-err { border-color: #f87171; }
+
+  hr { border: none; border-top: 1px solid #334155; margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<h1>麦克风权限诊断</h1>
+<p class="subtitle">ZenPrompter 语音跟随 — 底层权限 & 语音识别测试</p>
+
+<!-- 平台信息 -->
+<div class="card" id="platform-card">
+  <strong style="font-size:13px;">设备信息</strong>
+  <div id="platform-info" style="margin-top:6px;font-size:12px;color:#94a3b8;"></div>
+</div>
+
+<!-- 测试 1: getUserMedia -->
+<div class="card">
+  <div class="test-section">
+    <h3>测试 ① 底层权限探测 (getUserMedia)</h3>
+    <p style="font-size:11px;color:#64748b;margin-bottom:8px;">
+      探测麦克风硬件和系统级权限。如果弹窗出了且点了「允许」但仍报错，说明是 ROM 系统拦截。
+    </p>
+    <button class="btn btn-primary" id="btn-gum-test" onclick="testGetUserMedia()">
+      🔬 开始探测
+    </button>
+    <span id="gum-status" style="margin-left:10px;font-size:12px;"></span>
+    <div id="gum-detail" style="margin-top:8px;font-size:12px;"></div>
+  </div>
+
+  <hr>
+
+  <!-- 测试 2: SpeechRecognition -->
+  <div class="test-section">
+    <h3>测试 ② 语音识别测试 (SpeechRecognition)</h3>
+    <p style="font-size:11px;color:#64748b;margin-bottom:8px;">
+      启动浏览器语音识别引擎，验证 SpeechRecognition API 链路是否通畅。
+    </p>
+    <button class="btn btn-primary" id="btn-sr-test" onclick="testSpeechRecognition()">
+      🎤 启动识别
+    </button>
+    <span id="sr-status" style="margin-left:10px;font-size:12px;"></span>
+    <div id="sr-detail" style="margin-top:8px;font-size:12px;"></div>
+
+    <!-- 实时识别文字 -->
+    <div id="sr-live" style="margin-top:10px;padding:10px;background:#0f172a;border-radius:8px;font-size:14px;min-height:40px;display:none;"></div>
+
+    <button class="btn btn-danger" id="btn-sr-stop" onclick="stopSpeechRecognition()" style="display:none;margin-top:8px;">
+      ⏹ 停止识别
+    </button>
+  </div>
+</div>
+
+<!-- ROM 检测结果 -->
+<div class="card" id="rom-card" style="display:none;">
+  <div class="rom-card">
+    <h4 id="rom-title"></h4>
+    <div id="rom-desc" style="font-size:12px;color:#cbd5e1;margin-bottom:8px;"></div>
+    <ol class="step-list" id="rom-steps"></ol>
+  </div>
+</div>
+
+<!-- 日志 -->
+<div class="card">
+  <strong style="font-size:13px;">诊断日志</strong>
+  <div id="log" class="log-container"></div>
+  <button class="btn btn-secondary" onclick="clearLogs()" style="margin-top:8px;">↺ 清空日志</button>
+</div>
+
+<script>
+// ================================================================
+// 日志
+// ================================================================
+const logEl = document.getElementById('log');
+
+function log(msg, type = 'info') {
+  const now = new Date().toLocaleTimeString();
+  const line = document.createElement('div');
+  line.className = `log-line log-${type}`;
+  line.innerHTML = `<span class="log-time">${now}</span><span class="log-msg">${msg}</span>`;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function clearLogs() {
+  logEl.innerHTML = '';
+  log('日志已清空');
+}
+
+// ================================================================
+// 平台信息
+// ================================================================
+const ua = navigator.userAgent;
+let osName = 'Unknown';
+if (/android/i.test(ua)) osName = 'Android';
+else if (/iphone|ipad|ipod/i.test(ua)) osName = 'iOS';
+else if (/windows/i.test(ua)) osName = 'Windows';
+else if (/macintosh|mac os/i.test(ua)) osName = 'macOS';
+else if (/linux/i.test(ua)) osName = 'Linux';
+
+let browserName = 'Unknown';
+if (/edg/i.test(ua)) browserName = 'Edge';
+else if (/chrome/i.test(ua) && !/edg/i.test(ua)) browserName = 'Chrome';
+else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browserName = 'Safari';
+else if (/firefox/i.test(ua)) browserName = 'Firefox';
+
+const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const isHTTPS = location.protocol === 'https:';
+
+document.getElementById('platform-info').innerHTML = `
+  OS: ${osName} &nbsp;|&nbsp; Browser: ${browserName} &nbsp;|&nbsp;
+  Protocol: ${location.protocol.replace(':', '')} &nbsp;|&nbsp;
+  Language: ${navigator.language}
+`;
+
+if (!isHTTPS && !isLocalhost) {
+  log('⚠️ 非安全协议 (非 HTTPS / localhost)。getUserMedia 将报 SecurityError。请通过 localhost 访问。', 'warn');
+}
+if (browserName === 'Safari' || browserName === 'Firefox') {
+  log('⚠️ ' + browserName + ' 的 SpeechRecognition API 可能已废弃或不可用。建议使用 Chrome/Edge。', 'warn');
+}
+
+// ================================================================
+// ROM 检测
+// ================================================================
+const ROM_RULES = [
+  { vendor: 'xiaomi', name: '小米 MIUI / HyperOS',
+    detect: ua => /miui|hyperos|redmi|xiaomi/i.test(ua),
+    desc: 'MIUI/HyperOS 首次安装默认禁止麦克风，隐私保护可能静默拦截音频权限。',
+    steps: [
+      '设置 → 应用管理 → 提词器 → 权限管理',
+      '麦克风 → 设为「仅在使用中允许」',
+      '同时建议：关闭电池优化、开启自启动',
+    ]},
+  { vendor: 'oppo', name: 'OPPO / realme ColorOS',
+    detect: ua => /coloros|oppo|realme/i.test(ua),
+    desc: 'ColorOS 自动权限管理中可能将麦克风设为「拒绝」，需手动开启并关闭智能权限拦截。',
+    steps: [
+      '设置 → 应用 → 应用管理 → 提词器 → 权限',
+      '麦克风 → 设为「使用时允许」',
+    ]},
+  { vendor: 'huawei', name: '华为 HarmonyOS / EMUI',
+    detect: ua => /harmonyos|huawei|honor|emui/i.test(ua),
+    desc: 'HarmonyOS 纯净模式下非应用商店下载的 App 敏感权限会被默认拦截。',
+    steps: [
+      '设置 → 应用和服务 → 应用管理 → 提词器 → 权限',
+      '麦克风 → 设为「仅使用期间允许」',
+      '如果以上步骤无效，请关闭「纯净模式」后重试',
+    ]},
+  { vendor: 'vivo', name: 'vivo / iQOO OriginOS',
+    detect: ua => /originos|funtouch|vivo|iqoo/i.test(ua),
+    desc: 'OriginOS 隐私保护策略会静默拒绝首次安装应用的敏感权限请求。',
+    steps: [
+      '设置 → 应用与权限 → 权限管理 → 麦克风',
+      '提词器 → 设为「仅在使用中允许」',
+    ]},
+  { vendor: 'samsung', name: '三星 One UI',
+    detect: ua => /samsung|oneui/i.test(ua),
+    desc: '三星默认权限策略较宽松，但部分定制系统可能限制后台麦克风。',
+    steps: [
+      '设置 → 应用程序 → 提词器 → 权限',
+      '麦克风 → 设为「仅在使用应用时允许」',
+    ]},
+];
+
+const matchedROM = ROM_RULES.find(r => r.detect(ua));
+if (matchedROM) {
+  document.getElementById('rom-card').style.display = 'block';
+  document.getElementById('rom-title').textContent = '检测到: ' + matchedROM.name;
+  document.getElementById('rom-desc').textContent = matchedROM.desc;
+  document.getElementById('rom-steps').innerHTML = matchedROM.steps.map(s => `<li>${s}</li>`).join('');
+  log('检测到 ROM: ' + matchedROM.name + '（如遇权限异常，风险较高）', 'warn');
+}
+
+// ================================================================
+// 测试 1: getUserMedia 底层探测
+// ================================================================
+async function testGetUserMedia() {
+  const btn = document.getElementById('btn-gum-test');
+  const statusEl = document.getElementById('gum-status');
+  const detailEl = document.getElementById('gum-detail');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 探测中...';
+  statusEl.innerHTML = '';
+  detailEl.innerHTML = '';
+  log('开始 getUserMedia 底层探测...');
+
+  const start = performance.now();
+
+  try {
+    // 检查 API 可用性
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw { name: 'NotSupportedError', message: '当前环境不支持 getUserMedia API' };
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(t => t.stop());
+
+    const ms = Math.round(performance.now() - start);
+    statusEl.innerHTML = '<span class="badge badge-ok">✅ 探测成功</span>';
+    detailEl.innerHTML = `<span style="color:#4ade80;">getUserMedia 成功! 麦克风硬件和系统权限正常。耗时 ${ms}ms</span>`;
+    log('✅ getUserMedia 成功。硬件 + 系统权限正常。耗时 ' + ms + 'ms', 'ok');
+  } catch (err) {
+    const name = err.name || 'UnknownError';
+    const ms = Math.round(performance.now() - start);
+    statusEl.innerHTML = '<span class="badge badge-err">❌ 探测失败</span>';
+
+    let explanation = '';
+    switch (name) {
+      case 'NotAllowedError':
+      case 'PermissionDeniedError':
+        explanation = `
+          <span style="color:#f87171;font-weight:600;">权限被拒绝 (${name})</span><br>
+          <span style="color:#fbbf24;">
+            ⚠️ 关键诊断：如果您在弹窗中点了「允许」但仍报此错误，说明是手机系统(ROM)在底层静默拦截了权限。
+            ${matchedROM ? `<br>您的设备检测到 ${matchedROM.name}，此 ROM 已知会静默拦截麦克风权限。` : ''}
+          </span><br>
+          <span style="color:#94a3b8;font-size:11px;">
+            如果弹窗完全没出现，请检查：<br>
+            1. 地址栏左侧锁图标 → 站点设置 → 麦克风 → 是否设为「禁止」<br>
+            2. Chrome 设置 → 隐私 → 网站设置 → 麦克风 → 检查黑名单<br>
+            3. 尝试隐身模式打开（排除扩展干扰）
+          </span>`;
+        break;
+      case 'NotFoundError':
+        explanation = '<span style="color:#f87171;">未检测到麦克风硬件 (NotFoundError)</span>';
+        break;
+      case 'NotReadableError':
+        explanation = '<span style="color:#f87171;">麦克风被其他应用占用 (NotReadableError)</span>';
+        break;
+      case 'SecurityError':
+        explanation = `<span style="color:#f87171;">不安全的连接 (SecurityError)</span><br>
+          <span style="color:#fbbf24;">需要 HTTPS 或 localhost 才能访问麦克风。当前协议: ${location.protocol}</span>`;
+        break;
+      case 'AbortError':
+        explanation = '<span style="color:#fbbf24;">探测被中断 (AbortError)。请重试。</span>';
+        break;
+      default:
+        explanation = `<span style="color:#f87171;">未知错误: ${name} — ${err.message || ''}</span>`;
+    }
+
+    detailEl.innerHTML = explanation + `<br><span style="color:#64748b;font-size:10px;">耗时 ${ms}ms</span>`;
+    log('❌ getUserMedia 失败: ' + name + ' — ' + (err.message || '') + ' (耗时 ' + ms + 'ms)', 'err');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '🔬 重新探测';
+}
+
+// ================================================================
+// 测试 2: SpeechRecognition 测试（增强版）
+// ================================================================
+let recognition = null;
+let recognitionRunning = false;
+let retryCount = 0;
+const MAX_RETRIES = 8;
+
+function getSpeechRecognition() {
+  return (window).SpeechRecognition || (window).webkitSpeechRecognition;
+}
+
+function createRecognitionInstance() {
+  const SR = getSpeechRecognition();
+  const rec = new SR();
+  // 在 Android Chrome 上 continuous: false 更稳定
+  // 每次 onend 后自动重建实例
+  rec.continuous = false;
+  rec.interimResults = true;
+  rec.lang = 'zh-CN';
+  rec.maxAlternatives = 1;
+  return rec;
+}
+
+async function testSpeechRecognition() {
+  const btn = document.getElementById('btn-sr-test');
+  const stopBtn = document.getElementById('btn-sr-stop');
+  const statusEl = document.getElementById('sr-status');
+  const detailEl = document.getElementById('sr-detail');
+  const liveEl = document.getElementById('sr-live');
+
+  const SR = getSpeechRecognition();
+  if (!SR) {
+    statusEl.innerHTML = '<span class="badge badge-err">❌ 不支持</span>';
+    detailEl.innerHTML = '<span style="color:#f87171;">浏览器不支持 SpeechRecognition API。请使用 Chrome 或 Edge。</span>';
+    log('❌ SpeechRecognition API 不支持', 'err');
+    return;
+  }
+
+  // 先停止旧实例
+  if (recognition) {
+    try { recognition.onend = null; recognition.stop(); } catch(e) {}
+    recognition = null;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 启动中...';
+  statusEl.innerHTML = '';
+  detailEl.innerHTML = '';
+  retryCount = 0;
+
+  recognition = createRecognitionInstance();
+  log('SpeechRecognition: 初始化完成，语言: zh-CN，模式: continuous=false（Android 优化）');
+
+  let hasEverStarted = false;
+
+  recognition.onstart = () => {
+    hasEverStarted = true;
+    recognitionRunning = true;
+    retryCount = 0; // 成功后重置重试计数
+    statusEl.innerHTML = '<span class="badge badge-ok">✅ 已启动</span>';
+    liveEl.style.display = 'block';
+    liveEl.innerHTML = '<span style="color:#64748b;">等待语音输入…请对着麦克风说话</span>';
+    btn.style.display = 'none';
+    stopBtn.style.display = 'inline-flex';
+    log('✅ SpeechRecognition 启动成功。请对着麦克风说话。', 'ok');
+  };
+
+  recognition.onresult = (event) => {
+    let text = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      text += event.results[i][0].transcript;
+    }
+    liveEl.innerHTML = `<span style="color:#4ade80;">🎤 ${text || '(空)'}</span>`;
+    if (text) {
+      log('识别结果: ' + text, 'ok');
+      // continuous=false 模式下，收到结果后会自然结束 → onend 会触发重连
+    }
+  };
+
+  recognition.onerror = (event) => {
+    const err = event.error || '';
+    log(`SpeechRecognition 错误: ${err} (重试: ${retryCount}/${MAX_RETRIES})`, 'err');
+
+    if (err === 'not-allowed') {
+      statusEl.innerHTML = '<span class="badge badge-err">❌ 权限拒绝</span>';
+      detailEl.innerHTML = '<span style="color:#f87171;">语音识别权限被拒绝。浏览器/系统层面阻止了 SpeechRecognition API。</span>';
+      recognitionRunning = false;
+      resetSpeechUI();
+    } else if (err === 'no-speech') {
+      statusEl.innerHTML = '<span class="badge badge-warn">⚠️ 无语音</span>';
+      log('未检测到语音输入，请尝试说话', 'warn');
+      // onend 会处理重连
+    } else if (err === 'aborted') {
+      if (recognitionRunning && retryCount < MAX_RETRIES) {
+        log('SpeechRecognition 被中断（Android Chrome 已知问题），将自动重试…', 'warn');
+      }
+      // onend 会处理重连
+    } else if (err === 'network') {
+      statusEl.innerHTML = '<span class="badge badge-err">❌ 网络错误</span>';
+      detailEl.innerHTML = '<span style="color:#f87171;">语音识别需要网络连接。Android 系统语音引擎依赖 Google 服务器。</span>';
+      recognitionRunning = false;
+      resetSpeechUI();
+    } else if (err === 'audio-capture') {
+      statusEl.innerHTML = '<span class="badge badge-err">❌ 音频捕获失败</span>';
+      detailEl.innerHTML = '<span style="color:#f87171;">无法捕获音频。麦克风可能被占用。</span>';
+      recognitionRunning = false;
+      resetSpeechUI();
+    } else if (err === 'language-not-supported') {
+      statusEl.innerHTML = '<span class="badge badge-warn">⚠️ 语言不支持</span>';
+      detailEl.innerHTML = '<span style="color:#fbbf24;">zh-CN 不被当前引擎支持，尝试切换为 en-US。</span>';
+      // 尝试英文
+      if (recognition) {
+        recognition.lang = 'en-US';
+        if (recognitionRunning) {
+          try { recognition.start(); } catch(e) {}
+        }
+      }
+    } else {
+      statusEl.innerHTML = `<span class="badge badge-err">❌ ${err}</span>`;
+      detailEl.innerHTML = `<span style="color:#f87171;">${event.message || err}</span>`;
+      recognitionRunning = false;
+      resetSpeechUI();
+    }
+  };
+
+  recognition.onend = () => {
+    log(`SpeechRecognition onend (重试: ${retryCount}/${MAX_RETRIES})`, 'info');
+    if (recognitionRunning && retryCount < MAX_RETRIES) {
+      retryCount++;
+      // 每次重连时创建新实例（Android Chrome 上复用旧实例更容易出问题）
+      const newRec = createRecognitionInstance();
+
+      // 迁移事件处理器
+      newRec.onstart = recognition.onstart;
+      newRec.onresult = recognition.onresult;
+      newRec.onerror = recognition.onerror;
+      newRec.onend = recognition.onend;
+      recognition = newRec;
+
+      // 逐步增加延迟，前几次快，后面放缓
+      const delay = retryCount <= 3 ? 250 : retryCount <= 6 ? 500 : 1000;
+      setTimeout(() => {
+        if (recognitionRunning && recognition) {
+          try {
+            recognition.start();
+            log(`重连 #${retryCount} (延迟 ${delay}ms)…`, 'warn');
+          } catch(e) {
+            log(`重连 #${retryCount} 失败: ${e.message}`, 'err');
+            if (retryCount >= MAX_RETRIES) {
+              recognitionRunning = false;
+              resetSpeechUI();
+              statusEl.innerHTML = '<span class="badge badge-warn">⚠️ 已达最大重试次数</span>';
+              detailEl.innerHTML = '<span style="color:#fbbf24;">SpeechRecognition 在当前设备上不稳定。这是 Android Chrome 的已知限制，不影响麦克风权限本身。<br><br>建议：在 Capacitor App 中使用原生 Android SpeechRecognizer，或切换到 API 模式的语音识别。</span>';
+            }
+          }
+        }
+      }, delay);
+    } else if (retryCount >= MAX_RETRIES && recognitionRunning) {
+      log('已达最大重试次数，停止自动重连', 'warn');
+      recognitionRunning = false;
+      resetSpeechUI();
+      statusEl.innerHTML = '<span class="badge badge-warn">⚠️ 不稳定（已重试8次）</span>';
+      detailEl.innerHTML = `<span style="color:#fbbf24;">
+        SpeechRecognition 在 Android Chrome 上的已知限制：频繁自动中断(aborted)。<br><br>
+        ✅ 好消息：这与麦克风权限<b>无关</b>。getUserMedia 探测成功 = 权限正常。<br><br>
+        📱 在 Capacitor App 内置 WebView 中，我们会使用原生 Android SpeechRecognizer，不受此问题影响。<br>
+        🔧 也可以切换到 API 模式（讯飞/腾讯云/Whisper）来完全规避此问题。
+      </span>`;
+    } else {
+      // 不在运行中，自然结束
+      if (retryCount > 0) {
+        log('SpeechRecognition 自然结束（已重试 ' + retryCount + ' 次）', 'info');
+      }
+    }
+  };
+
+  try {
+    recognition.start();
+    log('SpeechRecognition.start() 调用成功', 'info');
+  } catch (e) {
+    log('SpeechRecognition.start() 异常: ' + e.message, 'err');
+    statusEl.innerHTML = '<span class="badge badge-err">❌ 启动失败</span>';
+    detailEl.innerHTML = `<span style="color:#f87171;">${e.message}</span>`;
+    btn.disabled = false;
+    btn.innerHTML = '🎤 重新启动';
+  }
+}
+
+function stopSpeechRecognition() {
+  recognitionRunning = false;
+  retryCount = 0;
+  if (recognition) {
+    try {
+      recognition.onend = null;
+      recognition.stop();
+    } catch(e) { /* ignore */ }
+    recognition = null;
+  }
+  document.getElementById('sr-live').style.display = 'none';
+  document.getElementById('sr-live').innerHTML = '';
+  document.getElementById('sr-status').innerHTML = '<span class="badge badge-pending">已停止</span>';
+  log('SpeechRecognition 已停止', 'info');
+  resetSpeechUI();
+}
+
+function resetSpeechUI() {
+  recognitionRunning = false;
+  retryCount = 0;
+  const btn = document.getElementById('btn-sr-test');
+  const stopBtn = document.getElementById('btn-sr-stop');
+  btn.style.display = 'inline-flex';
+  btn.disabled = false;
+  btn.innerHTML = '🎤 重新启动';
+  stopBtn.style.display = 'none';
+}
+
+// ================================================================
+// 初始化
+// ================================================================
+log('诊断页面已就绪。');
+if (matchedROM) {
+  log('您的设备可能运行 ' + matchedROM.name + '，如出现权限异常请参照上方 ROM 指引手动修复。', 'warn');
+}
+if (!getSpeechRecognition()) {
+  log('当前浏览器不支持 SpeechRecognition API。请使用 Chrome 或 Edge。', 'warn');
+}
+</script>
+</body>
+</html>

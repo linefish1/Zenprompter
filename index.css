@@ -1,0 +1,338 @@
+/* ===== Tailwind CSS v4 + custom theme ===== */
+@import "tailwindcss";
+
+/* ===== ZenPrompter Theme System =====
+ * CSS custom properties are set dynamically via applyStylePresetToDOM().
+ * These are the default (Zen Dark) values — they get overridden when a style preset is applied.
+ */
+
+:root {
+  /* Colors — Zen Dark defaults */
+  --zen-bg-primary: #000000;
+  --zen-bg-secondary: #111827;
+  --zen-bg-tertiary: #1F2937;
+  --zen-text-primary: #FFFFFF;
+  --zen-text-secondary: #9CA3AF;
+  --zen-text-muted: #6B7280;
+  --zen-accent: #F59E0B;
+  --zen-accent-hover: #D97706;
+  --zen-accent-text: #000000;
+  --zen-border: #1F2937;
+  --zen-border-light: #374151;
+  --zen-danger: #EF4444;
+  --zen-success: #10B981;
+
+  /* Typography */
+  --zen-font-family: 'Inter', 'PingFang SC', 'SF Pro Display', -apple-system, sans-serif;
+  --zen-heading-weight: 700;
+  --zen-body-weight: 400;
+
+  /* Spacing */
+  --zen-border-radius: 12px;
+  --zen-container-padding: 24px;
+}
+
+/* Global font application */
+body {
+  font-family: var(--zen-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility classes using theme tokens */
+.bg-zen-primary { background-color: var(--zen-bg-primary); }
+.bg-zen-secondary { background-color: var(--zen-bg-secondary); }
+.bg-zen-tertiary { background-color: var(--zen-bg-tertiary); }
+.text-zen-primary { color: var(--zen-text-primary); }
+.text-zen-secondary { color: var(--zen-text-secondary); }
+.text-zen-muted { color: var(--zen-text-muted); }
+.border-zen { border-color: var(--zen-border); }
+.border-zen-light { border-color: var(--zen-border-light); }
+
+/* Scrollbar styling */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ===== Apple Light Theme Overrides =====
+ * Remaps commonly-used Tailwind classes to Apple-style light palette.
+ * Uses CSS specificity to override Tailwind utility classes.
+ */
+
+/* Modal backdrop overlays */
+[data-style-preset="apple-light"] .bg-black\/90,
+[data-style-preset="apple-light"] .bg-black\/95 {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+}
+
+[data-style-preset="apple-light"] .bg-black\/80 {
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+}
+
+/* Background layers */
+[data-style-preset="apple-light"] .bg-gray-900 {
+  background-color: #FFFFFF;
+}
+[data-style-preset="apple-light"] .bg-gray-900\/80 {
+  background-color: rgba(255, 255, 255, 0.88);
+}
+[data-style-preset="apple-light"] .bg-gray-900\/95 {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+[data-style-preset="apple-light"] .bg-gray-900\/40 {
+  background-color: rgba(245, 245, 247, 0.6);
+}
+
+[data-style-preset="apple-light"] .bg-gray-950 {
+  background-color: #F5F5F7;
+}
+[data-style-preset="apple-light"] .bg-gray-950\/60 {
+  background-color: rgba(245, 245, 247, 0.8);
+}
+[data-style-preset="apple-light"] .bg-gray-950\/50 {
+  background-color: rgba(245, 245, 247, 0.7);
+}
+
+[data-style-preset="apple-light"] .bg-gray-800 {
+  background-color: #E5E5E7;
+}
+[data-style-preset="apple-light"] .bg-gray-800\/40 {
+  background-color: rgba(229, 229, 231, 0.6);
+}
+[data-style-preset="apple-light"] .hover\:bg-gray-800:hover {
+  background-color: #D1D1D6;
+}
+[data-style-preset="apple-light"] .hover\:bg-gray-700:hover {
+  background-color: #C7C7CC;
+}
+
+/* Text colors */
+[data-style-preset="apple-light"] .text-white {
+  color: #1D1D1F;
+}
+[data-style-preset="apple-light"] .text-gray-400 {
+  color: #86868B;
+}
+[data-style-preset="apple-light"] .text-gray-300 {
+  color: #6E6E73;
+}
+[data-style-preset="apple-light"] .text-gray-500 {
+  color: #AEAEB2;
+}
+[data-style-preset="apple-light"] .text-gray-200 {
+  color: #48484A;
+}
+[data-style-preset="apple-light"] .hover\:text-white:hover {
+  color: #1D1D1F;
+}
+[data-style-preset="apple-light"] .hover\:text-gray-200:hover {
+  color: #48484A;
+}
+[data-style-preset="apple-light"] .hover\:text-gray-300:hover {
+  color: #6E6E73;
+}
+
+/* Border colors */
+[data-style-preset="apple-light"] .border-gray-800 {
+  border-color: #E5E5E7;
+}
+[data-style-preset="apple-light"] .border-gray-900 {
+  border-color: #D1D1D6;
+}
+[data-style-preset="apple-light"] .border-gray-700 {
+  border-color: #C7C7CC;
+}
+[data-style-preset="apple-light"] .border-gray-700\/50 {
+  border-color: rgba(199, 199, 204, 0.7);
+}
+[data-style-preset="apple-light"] .border-gray-850 {
+  border-color: #DCDCE0;
+}
+
+/* Accent colors — remap amber to Apple blue */
+[data-style-preset="apple-light"] .text-amber-500 {
+  color: #007AFF;
+}
+[data-style-preset="apple-light"] .text-amber-400 {
+  color: #3395FF;
+}
+[data-style-preset="apple-light"] .text-amber-300 {
+  color: #66B0FF;
+}
+[data-style-preset="apple-light"] .text-amber-200 {
+  color: #99CCFF;
+}
+[data-style-preset="apple-light"] .text-amber-100 {
+  color: #CCE5FF;
+}
+
+[data-style-preset="apple-light"] .bg-amber-500 {
+  background-color: #007AFF;
+}
+[data-style-preset="apple-light"] .bg-amber-500\/20 {
+  background-color: rgba(0, 122, 255, 0.15);
+}
+[data-style-preset="apple-light"] .bg-amber-500\/10 {
+  background-color: rgba(0, 122, 255, 0.08);
+}
+[data-style-preset="apple-light"] .bg-amber-600 {
+  background-color: #0066CC;
+}
+[data-style-preset="apple-light"] .hover\:bg-amber-500\/10:hover {
+  background-color: rgba(0, 122, 255, 0.08);
+}
+[data-style-preset="apple-light"] .hover\:bg-amber-400:hover {
+  background-color: #3395FF;
+}
+[data-style-preset="apple-light"] .hover\:bg-amber-500\/20:hover {
+  background-color: rgba(0, 122, 255, 0.15);
+}
+
+[data-style-preset="apple-light"] .hover\:text-amber-500:hover {
+  color: #007AFF;
+}
+[data-style-preset="apple-light"] .hover\:text-amber-400:hover {
+  color: #3395FF;
+}
+
+[data-style-preset="apple-light"] .border-amber-500 {
+  border-color: #007AFF;
+}
+[data-style-preset="apple-light"] .border-amber-500\/10 {
+  border-color: rgba(0, 122, 255, 0.1);
+}
+[data-style-preset="apple-light"] .border-amber-500\/20 {
+  border-color: rgba(0, 122, 255, 0.15);
+}
+[data-style-preset="apple-light"] .border-amber-500\/30 {
+  border-color: rgba(0, 122, 255, 0.2);
+}
+[data-style-preset="apple-light"] .border-amber-500\/40 {
+  border-color: rgba(0, 122, 255, 0.25);
+}
+[data-style-preset="apple-light"] .border-amber-500\/45 {
+  border-color: rgba(0, 122, 255, 0.3);
+}
+[data-style-preset="apple-light"] .border-amber-450 {
+  border-color: #3395FF;
+}
+
+/* Amber background elements */
+[data-style-preset="apple-light"] .bg-amber-950 {
+  background-color: #F0F7FF;
+}
+[data-style-preset="apple-light"] .bg-amber-950\/50 {
+  background-color: rgba(240, 247, 255, 0.7);
+}
+[data-style-preset="apple-light"] .bg-amber-950\/40 {
+  background-color: rgba(240, 247, 255, 0.6);
+}
+[data-style-preset="apple-light"] .bg-amber-950\/60 {
+  background-color: rgba(240, 247, 255, 0.8);
+}
+[data-style-preset="apple-light"] .bg-amber-950\/20 {
+  background-color: rgba(240, 247, 255, 0.4);
+}
+[data-style-preset="apple-light"] .bg-amber-900\/20 {
+  background-color: rgba(200, 220, 245, 0.4);
+}
+[data-style-preset="apple-light"] .bg-amber-950\/80 {
+  background-color: rgba(240, 247, 255, 0.9);
+}
+[data-style-preset="apple-light"] .bg-amber-955 {
+  background-color: #F0F7FF;
+}
+
+/* Shadow adjustments */
+[data-style-preset="apple-light"] .shadow-2xl {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+[data-style-preset="apple-light"] .shadow-lg {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+[data-style-preset="apple-light"] .shadow-md {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+[data-style-preset="apple-light"] .shadow {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+[data-style-preset="apple-light"] .shadow-amber-950\/10 {
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.1);
+}
+[data-style-preset="apple-light"] .shadow-amber-950\/40 {
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.15);
+}
+
+/* Amber/orange gradient buttons - remap to blue */
+[data-style-preset="apple-light"] .from-amber-500 {
+  --tw-gradient-from: #007AFF;
+}
+[data-style-preset="apple-light"] .to-orange-500 {
+  --tw-gradient-to: #0055CC;
+}
+[data-style-preset="apple-light"] .hover\:from-amber-400:hover {
+  --tw-gradient-from: #3395FF;
+}
+[data-style-preset="apple-light"] .hover\:to-orange-400:hover {
+  --tw-gradient-to: #0066CC;
+}
+
+/* Muted/gray text in amber range */
+[data-style-preset="apple-light"] .text-amber-550 {
+  color: #007AFF;
+}
+
+/* Pulse animation dots */
+[data-style-preset="apple-light"] .bg-amber-400 {
+  background-color: #3395FF;
+}
+
+/* Ring focus styles */
+[data-style-preset="apple-light"] .ring-amber-500\/50 {
+  --tw-ring-color: rgba(0, 122, 255, 0.3);
+}
+
+/* Accent for range sliders */
+[data-style-preset="apple-light"] .accent-amber-500 {
+  accent-color: #007AFF;
+}
+
+/* Red danger elements keep their color but adjust opacity */
+[data-style-preset="apple-light"] .bg-red-950\/50 {
+  background-color: rgba(255, 59, 48, 0.1);
+}
+[data-style-preset="apple-light"] .bg-red-950\/40 {
+  background-color: rgba(255, 59, 48, 0.08);
+}
+[data-style-preset="apple-light"] .border-red-500\/20 {
+  border-color: rgba(255, 59, 48, 0.15);
+}
+[data-style-preset="apple-light"] .text-red-400 {
+  color: #FF3B30;
+}
+
+/* Blue elements in light theme */
+[data-style-preset="apple-light"] .bg-blue-950\/40 {
+  background-color: rgba(0, 122, 255, 0.08);
+}
+[data-style-preset="apple-light"] .border-blue-500\/20 {
+  border-color: rgba(0, 122, 255, 0.15);
+}
+[data-style-preset="apple-light"] .text-blue-300 {
+  color: #007AFF;
+}
+
+/* Green / success elements */
+[data-style-preset="apple-light"] .text-green-500 {
+  color: #34C759;
+}
+
+/* Smooth theme transitions */
+.app-shell,
+.modal-container,
+[class*="bg-gray-"],
+[class*="text-"],
+[class*="border-"] {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZenPrompter 安装指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', system-ui, sans-serif; }
+        body { background: #0a0a0f; color: #e5e7eb; }
+        .gradient-text { background: linear-gradient(135deg, #f59e0b, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card { background: #14141f; border: 1px solid #1e1e2e; border-radius: 12px; transition: border-color 0.2s; }
+        .card:hover { border-color: #f59e0b40; }
+        .code-block { background: #0c0c18; border: 1px solid #1e1e32; border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', 'Cascadia Code', monospace; font-size: 0.875rem; overflow-x: auto; color: #a5f3fc; }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; font-size: 0.875rem; flex-shrink: 0; }
+        .sidebar-nav a { transition: all 0.2s; }
+        .sidebar-nav a:hover { color: #f59e0b; }
+        .sidebar-nav a.active { color: #f59e0b; border-left: 3px solid #f59e0b; padding-left: 0.75rem; }
+        .platform-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .platform-icon.web { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .platform-icon.android { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .platform-icon.ios { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .platform-icon.dev { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0f; }
+        ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3a3a4a; }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="hidden lg:flex flex-col w-64 bg-[#0c0c14] border-r border-[#1e1e2e] p-6 fixed h-full overflow-y-auto">
+            <div class="mb-8">
+                <div class="text-2xl font-black tracking-tight">
+                    <span class="text-white">Zen</span><span class="text-amber-500">Prompter</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">安装指南</p>
+            </div>
+            <nav class="sidebar-nav space-y-1 text-sm text-gray-400 flex-1">
+                <a href="#overview" class="block py-2 active font-medium">概览</a>
+                <a href="#prerequisites" class="block py-2">环境要求</a>
+                <a href="#web" class="block py-2">Web 浏览器版</a>
+                <a href="#android" class="block py-2">Android 构建</a>
+                <a href="#ios" class="block py-2">iOS 构建</a>
+                <a href="#dev" class="block py-2">开发环境搭建</a>
+                <a href="#config" class="block py-2">环境变量配置</a>
+                <a href="#troubleshoot" class="block py-2">常见问题</a>
+            </nav>
+            <div class="pt-4 border-t border-[#1e1e2e] text-xs text-gray-600">
+                v1.0.0 &middot; 2026-05-29
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 lg:ml-64 p-6 lg:p-10 max-w-4xl">
+            <!-- Mobile Header -->
+            <div class="lg:hidden mb-6">
+                <div class="text-2xl font-black tracking-tight">
+                    <span class="text-white">Zen</span><span class="text-amber-500">Prompter</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">安装指南</p>
+                <hr class="border-[#1e1e2e] mt-4" />
+            </div>
+
+            <!-- Hero -->
+            <section id="overview" class="mb-12">
+                <h1 class="text-4xl lg:text-5xl font-black tracking-tight mb-4">
+                    <span class="gradient-text">安装指南</span>
+                </h1>
+                <p class="text-lg text-gray-400 leading-relaxed max-w-2xl">
+                    ZenPrompter 是一款智能提词器应用，支持 <strong class="text-white">Web 浏览器</strong>、
+                    <strong class="text-white">Android</strong> 和 <strong class="text-white">iOS</strong> 三大平台。
+                    本文档将引导您在不同平台上完成安装与配置。
+                </p>
+            </section>
+
+            <!-- Platform Quick Links -->
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+                <a href="#web" class="card p-5 flex items-center gap-4">
+                    <div class="platform-icon web">🌐</div>
+                    <div>
+                        <h3 class="font-bold text-white">Web 版</h3>
+                        <p class="text-xs text-gray-500">无需安装，打开即用</p>
+                    </div>
+                </a>
+                <a href="#android" class="card p-5 flex items-center gap-4">
+                    <div class="platform-icon android">📱</div>
+                    <div>
+                        <h3 class="font-bold text-white">Android</h3>
+                        <p class="text-xs text-gray-500">APK 构建与安装</p>
+                    </div>
+                </a>
+                <a href="#ios" class="card p-5 flex items-center gap-4">
+                    <div class="platform-icon ios">🍎</div>
+                    <div>
+                        <h3 class="font-bold text-white">iOS</h3>
+                        <p class="text-xs text-gray-500">Xcode 构建与部署</p>
+                    </div>
+                </a>
+            </section>
+
+            <!-- Prerequisites -->
+            <section id="prerequisites" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-6">环境要求</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-amber-400 mb-2">Web 浏览器版</h3>
+                        <ul class="space-y-1.5 text-sm text-gray-400">
+                            <li class="flex items-center gap-2"><span class="text-green-400">✓</span> 现代浏览器（Chrome 90+ / Edge 90+）</li>
+                            <li class="flex items-center gap-2"><span class="text-green-400">✓</span> 网络连接（用于语音识别与 AI 功能）</li>
+                            <li class="flex items-center gap-2"><span class="text-green-400">✓</span> 麦克风权限（语音跟读模式需要）</li>
+                            <li class="flex items-center gap-2 text-gray-600 italic"><span class="text-amber-500">i</span> 推荐使用 Chrome 浏览器获得最佳体验</li>
+                        </ul>
+                    </div>
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-amber-400 mb-2">构建开发版</h3>
+                        <ul class="space-y-1.5 text-sm text-gray-400">
+                            <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Node.js 18.0+</li>
+                            <li class="flex items-center gap-2"><span class="text-green-400">✓</span> npm 9.0+</li>
+                            <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Git</li>
+                            <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Android Studio（构建 Android 需要）</li>
+                            <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Xcode 15+（构建 iOS 需要，仅 macOS）</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Web Version -->
+            <section id="web" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                    <span class="platform-icon web !w-8 !h-8 !text-base">🌐</span>
+                    Web 浏览器版
+                </h2>
+                <p class="text-gray-500 text-sm mb-6">最简单快捷的使用方式，无需任何安装步骤。</p>
+
+                <div class="space-y-4">
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">1</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">打开浏览器</h3>
+                                <p class="text-sm text-gray-400">推荐使用 Google Chrome 或 Microsoft Edge 浏览器。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">2</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">访问应用地址</h3>
+                                <p class="text-sm text-gray-400">在浏览器地址栏输入 ZenPrompter 的部署地址（如为本地开发，访问 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">http://localhost:3000</code>）。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">3</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">开始使用</h3>
+                                <p class="text-sm text-gray-400">应用加载后，您将看到欢迎指南页面。点击 <strong class="text-amber-400">"开始使用"</strong> 按钮进入主界面，即可开始编辑脚本和使用提词功能。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-amber-950/20 border border-amber-500/20 rounded-xl p-4 mt-4">
+                    <p class="text-sm text-amber-300 flex items-start gap-2">
+                        <span class="text-lg leading-none">💡</span>
+                        <span>Web 版完全免费，无需注册账号。所有数据存储在您本地浏览器的 localStorage 中，关闭页面后数据不会丢失。</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Android -->
+            <section id="android" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                    <span class="platform-icon android !w-8 !h-8 !text-base">📱</span>
+                    Android 原生构建
+                </h2>
+                <p class="text-gray-500 text-sm mb-6">将 ZenPrompter 构建为 Android APK 应用，安装到手机或平板上使用。</p>
+
+                <div class="space-y-4">
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">1</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">克隆项目代码</h3>
+                                <div class="code-block">git clone https://github.com/linefish1/zn.git<br />cd zn</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">2</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">安装依赖</h3>
+                                <div class="code-block">npm install</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">3</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">配置环境变量（可选）</h3>
+                                <p class="text-sm text-gray-400 mb-2">在项目根目录创建 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">.env</code> 文件：</p>
+                                <div class="code-block">VITE_API_KEY=你的Google_Gemini_API_Key</div>
+                                <p class="text-xs text-gray-500 mt-2">如需使用 AI 脚本生成功能，建议配置此 Key。未配置时仍可使用提词器基础功能。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">4</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">构建 Web 资源并同步 Android</h3>
+                                <div class="code-block">npm run build:android</div>
+                                <p class="text-xs text-gray-500 mt-2">此命令会构建 Web 前端资源，并将它们同步到 Android 原生项目中。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">5</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">在 Android Studio 中打开并构建</h3>
+                                <div class="code-block">npm run open:android</div>
+                                <p class="text-sm text-gray-400 mt-2">这将启动 Android Studio 并加载 Android 项目。在 Android Studio 中：</p>
+                                <ul class="text-sm text-gray-400 mt-2 space-y-1 ml-4 list-disc">
+                                    <li>连接 Android 设备或启动模拟器</li>
+                                    <li>点击 <strong class="text-white">Run</strong> 按钮（绿色三角）构建并安装 APK</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-950/20 border border-blue-500/20 rounded-xl p-4 mt-4">
+                    <p class="text-sm text-blue-300 flex items-start gap-2">
+                        <span class="text-lg leading-none">📌</span>
+                        <span>Android 原生应用需要 <strong class="text-white">麦克风权限</strong>，安装时请注意授权。语音跟读功能依赖于设备麦克风。</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- iOS -->
+            <section id="ios" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                    <span class="platform-icon ios !w-8 !h-8 !text-base">🍎</span>
+                    iOS 原生构建
+                </h2>
+                <p class="text-gray-500 text-sm mb-6">将 ZenPrompter 构建为 iOS 应用，在 iPhone 或 iPad 上使用。需在 macOS 环境下进行。</p>
+
+                <div class="space-y-4">
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">1</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">克隆项目并安装依赖</h3>
+                                <div class="code-block">git clone https://github.com/linefish1/zn.git<br />cd zn<br />npm install</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">2</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">构建 Web 资源并同步 iOS</h3>
+                                <div class="code-block">npm run build:ios</div>
+                                <p class="text-xs text-gray-500 mt-2">构建前端资源并同步到 iOS 原生项目。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">3</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">在 Xcode 中打开</h3>
+                                <div class="code-block">npm run open:ios</div>
+                                <p class="text-sm text-gray-400 mt-2">在 Xcode 中：</p>
+                                <ul class="text-sm text-gray-400 mt-2 space-y-1 ml-4 list-disc">
+                                    <li>选择您的开发者团队（Signing & Capabilities）</li>
+                                    <li>连接 iOS 设备或选择模拟器</li>
+                                    <li>点击 <strong class="text-white">Run</strong> 按钮构建安装</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-purple-950/20 border border-purple-500/20 rounded-xl p-4 mt-4">
+                    <p class="text-sm text-purple-300 flex items-start gap-2">
+                        <span class="text-lg leading-none">📌</span>
+                        <span>iOS 构建需要有效的 Apple Developer 账户用于签名。在 Xcode 的 <strong class="text-white">Info.plist</strong> 中已包含 <code class="text-purple-400 bg-purple-950/30 px-1.5 py-0.5 rounded text-xs">NSMicrophoneUsageDescription</code> 麦克风权限声明。</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Dev Setup -->
+            <section id="dev" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                    <span class="platform-icon dev !w-8 !h-8 !text-base">⚡</span>
+                    开发环境搭建
+                </h2>
+                <p class="text-gray-500 text-sm mb-6">如果您希望二次开发或本地调试，请按以下步骤搭建开发环境。</p>
+
+                <div class="space-y-4">
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">1</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">安装 Node.js</h3>
+                                <p class="text-sm text-gray-400">访问 <a href="https://nodejs.org" class="text-amber-400 hover:underline">nodejs.org</a> 下载并安装 Node.js 18.0 或更高版本。<br />验证安装成功：</p>
+                                <div class="code-block mt-2">node --version<br />npm --version</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">2</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">克隆项目并安装依赖</h3>
+                                <div class="code-block">git clone https://github.com/linefish1/zn.git<br />cd zn<br />npm install</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">3</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">启动开发服务器</h3>
+                                <div class="code-block">npm run dev</div>
+                                <p class="text-sm text-gray-400 mt-2">开发服务器将在 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">http://localhost:3000</code> 启动，支持热模块替换（HMR），代码修改后自动刷新。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">4</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">生产构建</h3>
+                                <p class="text-sm text-gray-400 mb-2">构建用于生产部署的静态文件：</p>
+                                <div class="code-block">npm run build</div>
+                                <p class="text-sm text-gray-400 mt-2">构建产物输出到 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">dist/</code> 目录，可直接部署到任意静态服务器。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-start gap-3">
+                            <span class="step-number">5</span>
+                            <div>
+                                <h3 class="font-semibold text-white mb-1">预览构建结果</h3>
+                                <div class="code-block">npm run preview</div>
+                                <p class="text-sm text-gray-400 mt-2">在本地预览构建后的生产版本。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Config -->
+            <section id="config" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-6">环境变量配置</h2>
+                <p class="text-gray-500 text-sm mb-4">项目使用 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">.env</code> 文件管理环境变量。</p>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-[#1e1e2e]">
+                                <th class="text-left py-3 px-4 text-gray-400 font-medium">变量名</th>
+                                <th class="text-left py-3 px-4 text-gray-400 font-medium">说明</th>
+                                <th class="text-left py-3 px-4 text-gray-400 font-medium">是否必需</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#1e1e2e]">
+                            <tr>
+                                <td class="py-3 px-4 text-cyan-400 font-mono text-xs">VITE_API_KEY</td>
+                                <td class="py-3 px-4 text-gray-400">Google Gemini API Key（从 Google AI Studio 获取）</td>
+                                <td class="py-3 px-4"><span class="text-amber-400 text-xs">可选</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card p-4 mt-4">
+                    <h3 class="font-semibold text-white text-sm mb-2">获取 Gemini API Key</h3>
+                    <ol class="text-sm text-gray-400 space-y-1 ml-4 list-decimal">
+                        <li>访问 <a href="https://aistudio.google.com" class="text-amber-400 hover:underline">Google AI Studio</a></li>
+                        <li>点击 "Get API Key" 按钮</li>
+                        <li>创建或选择您的 API Key</li>
+                        <li>将 Key 填入 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">.env</code> 文件的 <code class="text-cyan-400">VITE_API_KEY</code> 字段</li>
+                    </ol>
+                </div>
+
+                <div class="card p-4 mt-3">
+                    <h3 class="font-semibold text-white text-sm mb-2">使用自定义 LLM 引擎</h3>
+                    <p class="text-sm text-gray-400">ZenPrompter 支持在应用内通过 <strong class="text-white">API 接口设置</strong> 面板配置 8 种不同的 LLM 引擎。您无需通过环境变量配置，直接在 UI 界面中填写 API Key 和端点地址即可。</p>
+                </div>
+            </section>
+
+            <!-- Troubleshoot -->
+            <section id="troubleshoot" class="mb-12">
+                <h2 class="text-2xl font-bold text-white mb-6">常见安装问题</h2>
+
+                <div class="space-y-4">
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-amber-400 mb-2">npm install 失败</h3>
+                        <ul class="text-sm text-gray-400 space-y-1 ml-4 list-disc">
+                            <li>确认 Node.js 版本 ≥ 18.0：运行 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">node --version</code></li>
+                            <li>尝试清除 npm 缓存：<code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">npm cache clean --force</code></li>
+                            <li>删除 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">node_modules</code> 和 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">package-lock.json</code> 后重新安装</li>
+                            <li>国内用户建议使用淘宝镜像：<code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">npm config set registry https://registry.npmmirror.com</code></li>
+                        </ul>
+                    </div>
+
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-amber-400 mb-2">Android 构建失败</h3>
+                        <ul class="text-sm text-gray-400 space-y-1 ml-4 list-disc">
+                            <li>确认已安装 Android Studio 并配置了 Android SDK</li>
+                            <li>在 Android Studio 中打开 SDK Manager，确保已安装 Android SDK 34+</li>
+                            <li>设置 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">ANDROID_HOME</code> 环境变量指向 SDK 路径</li>
+                            <li>运行 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">npx cap sync android</code> 重新同步</li>
+                        </ul>
+                    </div>
+
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-amber-400 mb-2">iOS 构建失败</h3>
+                        <ul class="text-sm text-gray-400 space-y-1 ml-4 list-disc">
+                            <li>确认已安装 Xcode 15+ 和 Command Line Tools</li>
+                            <li>在 Xcode 中配置有效的 Apple Developer 签名证书</li>
+                            <li>运行 <code class="text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded text-xs">npx cap sync ios</code> 重新同步</li>
+                            <li>检查 Info.plist 中权限声明是否完整</li>
+                        </ul>
+                    </div>
+
+                    <div class="card p-5">
+                        <h3 class="font-semibold text-amber-400 mb-2">语音功能不可用</h3>
+                        <ul class="text-sm text-gray-400 space-y-1 ml-4 list-disc">
+                            <li>在浏览器中确认已授予麦克风权限（地址栏左侧锁图标查看）</li>
+                            <li>Android/iOS 原生应用需在系统设置中开启麦克风权限</li>
+                            <li>语音识别需要网络连接</li>
+                            <li>推荐使用 Chrome 浏览器（Web Speech API 支持最完善）</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="border-t border-[#1e1e2e] pt-6 pb-12 text-sm text-gray-600">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="text-white font-bold">Zen</span><span class="text-amber-500 font-bold">Prompter</span>
+                        <span class="mx-2">·</span> v1.0.0
+                    </div>
+                    <div class="flex gap-4">
+                        <a href="https://github.com/linefish1/zn" class="hover:text-amber-400 transition-colors" target="_blank">GitHub</a>
+                        <a href="user-manual.html" class="hover:text-amber-400 transition-colors">使用说明书</a>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>
